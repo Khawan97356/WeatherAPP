@@ -1,7 +1,6 @@
+import ErrorMessage from "./components/ErrorMessage"
 import SearchBar from "./components/SearchBar"
 import TemperatureToggle from "./components/TemperatureToggle"
-import LoadingSpinner from "./components/LoadingSpinner"
-import ErrorMessage from "./components/ErrorMessage"
 import WeatherCard from "./components/WeatherCard"
 import WeatherForecast from "./components/WeatherForecast"
 import { useWeather } from "./hooks/useWeather"
@@ -10,6 +9,14 @@ import { useWeather } from "./hooks/useWeather"
 const App = () => {
 
   const { currentWeather, forecast, loading, error, unit, fetchWeatherCity, fetchWeatherByLocation, toggleUnit, searchCities } = useWeather();
+
+  const handleRetry = () => {
+    if (currentWeather) {
+      fetchWeatherCity(currentWeather.name);
+    } else {
+      fetchWeatherCity("New York"); // Default city or handle accordingly
+    }
+  }
 
   return (
     <div className='relative min-h-screen w-full overflow-hidden'>
@@ -52,16 +59,16 @@ const App = () => {
         )}
 
         {/* Conditional Rendering */}
-        {error && !loading && (<div className="max-w-2xl mx-auto"> {/*<ErrorMessage />*/}</div>)}
+        {error && !loading && (<div className="max-w-2xl mx-auto"> <ErrorMessage message={error} onRetry={handleRetry} /></div>)}
 
         {/* Conditional Rendering */}
         {currentWeather && !loading && (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <div className="xl:col-span-2"><WeatherCard />
+            <div className="xl:col-span-2"><WeatherCard weather={currentWeather} unit={unit} />
             </div>
             <div className="xl:col-span-1">
               {/* Conditional Rendering */}
-              {forecast && <WeatherForecast />}
+              {forecast && <WeatherForecast forecast={forecast} unit={unit} />}
             </div>
           </div>
         )}

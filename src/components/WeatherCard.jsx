@@ -1,19 +1,81 @@
-import { MapPin, Sunrise, Sunset } from 'lucide-react'
+import { Eye, Gauge, MapPin, Sunrise, Sunset, Wind, Droplet, Thermometer } from 'lucide-react'
 
-const WeatherCard = () => {
+// --- Utils ---
+const formatTemperature = (temp, unit) => {
+  return unit === 'C'
+    ? temp.toFixed(1)
+    : (temp * 9 / 5 + 32).toFixed(1)
+}
+
+const getWeatherIcon = (weather) => {
+  const id = weather?.id || 0
+
+  if (id >= 200 && id < 300) return "CloudLightning"
+  if (id >= 300 && id < 600) return "CloudRain"
+  if (id >= 600 && id < 700) return "Snowflake"
+  if (id >= 700 && id < 800) return "Wind"
+  if (id === 800) return "Sun"
+  if (id > 800) return "Cloud"
+
+  return "Cloud"
+}
+
+import * as LucideIcons from "lucide-react"
+
+const WeatherCard = ({ weather, unit }) => {
+
+  const iconName = getWeatherIcon(weather?.weather?.[0])
+  const IconComponent = LucideIcons[iconName] || LucideIcons.Cloud
+
+  const WeatherStats = [
+    {
+      icon: Eye,
+      label: 'Visibility',
+      value: `${(weather.visibility / 1000).toFixed(1)} km`,
+      color: 'text-blue-300',
+    },
+    {
+      icon: Wind,
+      label: 'Wind Speed',
+      value: `${weather.wind.speed.toFixed(1)} m/s`,
+      color: 'text-green-300',
+    },
+    {
+      icon: Droplet,
+      label: 'Humidity',
+      value: `${weather.main.humidity}%`,
+      color: 'text-purple-300',
+    },
+    {
+      icon: Gauge,
+      label: 'Pressure',
+      value: `${weather.main.pressure} hPa`,
+      color: 'text-purple-300',
+    },
+    {
+      icon: Thermometer,
+      label: 'Feels Like',
+      value: `${formatTemperature(weather.main.feels_like, unit)}°${unit}`,
+      color: 'text-orange-300',
+    },
+  ]
+
+  const date = new Date()
+  const sunrise = new Date(weather.sys.sunrise * 1000).toLocaleTimeString()
+  const sunset = new Date(weather.sys.sunset * 1000).toLocaleTimeString()
+
   return (
-    <div className=' w-full max-w-[700px] mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:bg-white/15 transition-all duration-500'>
+    <div className='w-full max-w-[700px] mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:bg-white/15 transition-all duration-500'>
 
       {/* Header */}
       <div className='flex items-center justify-between mb-8'>
-
         <div className='flex items-center space-x-3'>
           <div className='p-2 bg-white/10 rounded-full'>
             <MapPin className='w-5 h-5 text-white/80' />
           </div>
           <div className='flex flex-col leading-tight'>
-            <h2 className='text-white font-semibold text-lg'>Weather Name</h2>
-            <p className='text-white/60 text-sm'>Weather Country</p>
+            <h2 className='text-white font-semibold text-lg'>{weather.name}</h2>
+            <p className='text-white/60 text-sm'>{weather.sys.country}</p>
           </div>
         </div>
       </div>
@@ -21,10 +83,10 @@ const WeatherCard = () => {
       {/* Date */}
       <div className='text-right mb-6'>
         <div className='text-white/70 text-sm'>
-          {/* Dynamic Date */}
+          {date.toLocaleDateString()}
         </div>
         <div className='text-white/50 text-xs'>
-          {/* Dynamic Time */}
+          {date.toLocaleTimeString()}
         </div>
       </div>
 
@@ -34,45 +96,48 @@ const WeatherCard = () => {
         {/* LEFT SIDE */}
         <div>
           <div className='text-7xl font-bold text-white mb-1 tracking-tight'>
-            Main Temp
+            {formatTemperature(weather.main.temp, unit)}°{unit}
+            <span className='text-4xl font-normal text-white/70'>{unit}</span>
           </div>
 
           <p className='text-white/80 text-lg capitalize mb-2'>
-            Weather Description
+            {weather.weather[0].description}
           </p>
 
           <div className='flex items-center space-x-4 text-white/60 text-sm'>
-            <span>Max Temp</span>
-            <span>Min Temp</span>
+            <span>Max: {formatTemperature(weather.main.temp_max, unit)}°{unit}</span>
+            <span>Min: {formatTemperature(weather.main.temp_min, unit)}°{unit}</span>
           </div>
         </div>
 
         {/* RIGHT SIDE */}
         <div className='text-white/90 transform hover:scale-110 transition-transform duration-300'>
-          {/* Weather Icon */}
+          <IconComponent size={100} />
+
         </div>
 
       </div>
 
-
-
       {/* Weather Stats Grid */}
       <div className='grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
-        <div className='bg-white/5 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/10 transition-all duration-300 group'>
-          <div className='flex items-center space-x-3 mb-2'>
-            <div className='p-2 rounded-full bg-white/10 group-hover:bg-white/20 transition-all'>
-              {/* Dynamic Icon */}
+        {WeatherStats.map((stat, index) => (
+          <div key={index} className='bg-white/5 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/10 transition-all duration-300 group'>
+            <div className='flex items-center space-x-3 mb-2'>
+              <div className='p-2 rounded-full bg-white/10 group-hover:bg-white/20 transition-all'>
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              </div>
+              <span className='text-white/70 text-sm font-medium'>{stat.label}</span>
             </div>
-            <span className='text-white/70 text-sm font-medium'>Stats Label</span>
+            <div className='text-white font-semibold text-lg pl-11'>
+              {stat.value}
+            </div>
           </div>
-          <div className='text-white font-semibold text-lg pl-11'>
-            Stats Value
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Sun Times */}
       <div className='grid grid-cols-2 gap-4'>
+
         {/* Sunrise */}
         <div className='bg-gradient-to-r from-orange-500/20 to-yellow-500/20 backdrop-blur-sm rounded-2xl p-4 border border-orange-400/20'>
           <div className='flex items-center space-x-3 mb-2'>
@@ -82,7 +147,7 @@ const WeatherCard = () => {
             <span className='text-white/80 text-sm font-medium'>Sunrise</span>
           </div>
           <div className='text-white font-semibold text-lg pl-11'>
-            {/* Dynamic Sunrise */}
+            {sunrise}
           </div>
         </div>
 
@@ -95,9 +160,10 @@ const WeatherCard = () => {
             <span className='text-white/80 text-sm font-medium'>Sunset</span>
           </div>
           <div className='text-white font-semibold text-lg pl-11'>
-            {/* Dynamic Sunset */}
+            {sunset}
           </div>
         </div>
+
       </div>
 
     </div>

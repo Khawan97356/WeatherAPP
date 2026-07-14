@@ -45,9 +45,10 @@ export const getCurrentWeatherByCoords = async (lat, lon) => {
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error("Invalid API Key.");
-      }
+      } else {
       throw new Error("Weather service unavailable.");
     }
+  }
 
     const data = await response.json();
 
